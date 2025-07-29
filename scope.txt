@@ -1,0 +1,34 @@
+contract,source,total,comment
+olympus-v3/src/bases/BasePeriodicTaskManager.sol,94,192,64
+olympus-v3/src/bases/BaseAssetManager.sol,118,245,88
+olympus-v3/src/policies/ReserveWrapper.sol,70,140,36
+olympus-v3/src/policies/Heart.sol,116,218,60
+olympus-v3/src/policies/EmissionManager.sol,326,564,142
+olympus-v3/src/libraries/Uint2Str.sol,22,27,4
+olympus-v3/src/libraries/Timestamp.sol,33,43,4
+olympus-v3/src/libraries/ERC6909Wrappable.sol,125,221,54
+olympus-v3/src/libraries/DecimalString.sol,51,87,20
+olympus-v3/src/libraries/CloneableReceiptToken.sol,36,90,39
+olympus-v3/src/libraries/AddressStorageArray.sol,23,47,14
+olympus-v3/src/external/clones/CloneERC20.sol,64,125,26
+olympus-v3/src/modules/DEPOS/PositionTokenRenderer.sol,146,184,20
+olympus-v3/src/modules/DEPOS/OlympusDepositPositionManager.sol,207,432,143
+olympus-v3/src/modules/DEPOS/DEPOS.v1.sol,11,37,16
+olympus-v3/src/policies/deposits/YieldDepositFacility.sol,257,426,98
+olympus-v3/src/policies/deposits/DepositRedemptionVault.sol,434,764,180
+olympus-v3/src/policies/deposits/DepositManager.sol,295,548,146
+olympus-v3/src/policies/deposits/ConvertibleDepositFacility.sol,212,379,102
+olympus-v3/src/policies/deposits/ConvertibleDepositAuctioneer.sol,362,749,245
+olympus-v3/src/policies/deposits/BaseDepositFacility.sol,196,337,75
+source count: {
+total: 5855,
+source: 3198,
+comment: 1576,
+single: 1564,
+block: 12,
+mixed: 24,
+empty: 1105,
+todo: 1,
+blockEmpty: 0,
+commentToSourceRatio: 0.49280800500312694
+}

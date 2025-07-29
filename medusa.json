@@ -1,0 +1,82 @@
+{
+    "compilation": {
+        "platform": "crytic-compile",
+        "platformConfig": {
+            "args": ["--foundry-compile-all"],
+            "exportDirectory": "",
+            "solcVersion": "",
+            "target": "src/test/fuzzing/Fuzz.sol"
+        }
+    },
+    "fuzzing": {
+        "blockGasLimit": 1500000000,
+        "blockNumberDelayMax": 100,
+        "blockTimestampDelayMax": 100,
+        "callSequenceLength": 200,
+        "chainConfig": {
+            "cheatCodes": {
+                "cheatCodesEnabled": true,
+                "enableFFI": false
+            },
+            "codeSizeCheckDisabled": true
+        },
+        "constructorArgs": {},
+        "corpusDirectory": "medusa-corpus",
+        "coverageEnabled": true,
+        "coverageFormats": ["html", "lcov"],
+        "deployerAddress": "0x30000",
+        "predeployedContracts": {},
+        "revertReporterEnabled": true,
+        "senderAddresses": ["0x10000", "0x20000", "0x30000"],
+        "shrinkLimit": 5000,
+        "targetContracts": ["Fuzz"],
+        "targetContractsBalances": ["0xfffffffffffffffffffffffffffffff"],
+        "testLimit": 100000000,
+        "testing": {
+            "assertionTesting": {
+                "enabled": true,
+                "panicCodeConfig": {
+                    "failOnAllocateTooMuchMemory": false,
+                    "failOnArithmeticUnderflow": false,
+                    "failOnAssertion": true,
+                    "failOnCallUninitializedVariable": false,
+                    "failOnCompilerInsertedPanic": false,
+                    "failOnDivideByZero": false,
+                    "failOnEnumTypeConversionOutOfBounds": false,
+                    "failOnIncorrectStorageAccess": false,
+                    "failOnOutOfBoundsArrayAccess": false,
+                    "failOnPopEmptyArray": false
+                },
+                "testViewMethods": true
+            },
+            "excludeFunctionSignatures": [],
+            "optimizationTesting": {
+                "enabled": false,
+                "testPrefixes": ["optimize_"]
+            },
+            "propertyTesting": {
+                "enabled": false,
+                "testPrefixes": ["medusa_"]
+            },
+            "stopOnFailedContractMatching": false,
+            "stopOnFailedTest": false,
+            "stopOnNoTests": true,
+            "testAllContracts": false,
+            "traceAll": true
+        },
+        "timeout": 0,
+        "transactionGasLimit": 150000000,
+        "workerResetLimit": 50,
+        "workers": 10
+    },
+    "logging": {
+        "level": "info",
+        "logDirectory": "",
+        "noColor": false
+    },
+    "slither": {
+        "args": [],
+        "cachePath": "slither_results.json",
+        "useSlither": false
+    }
+}

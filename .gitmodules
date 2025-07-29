@@ -1,0 +1,3 @@
+[submodule "dependencies/fuzzlib"]
+	path = dependencies/fuzzlib
+	url = https://github.com/perimetersec/fuzzlib

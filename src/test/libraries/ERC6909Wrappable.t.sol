@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Unlicense
-pragma solidity >=0.8.20;
+pragma solidity ^0.8.15;
 
 import {Test} from "@forge-std-1.9.6/Test.sol";
 import {MockERC6909Wrappable} from "../mocks/MockERC6909Wrappable.sol";

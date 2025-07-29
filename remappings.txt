@@ -43,3 +43,4 @@ dependencies/forge-proposal-simulator-1.0.0/:@addresses/=dependencies/forge-prop
 dependencies/forge-proposal-simulator-1.0.0/:@utils/=dependencies/forge-proposal-simulator-1.0.0/utils/
 dependencies/forge-proposal-simulator-1.0.0/:@proposals/=dependencies/forge-proposal-simulator-1.0.0/proposals/
 dependencies/forge-proposal-simulator-1.0.0/:Governors/=dependencies/forge-proposal-simulator-1.0.0/Governors/
+@perimetersec/fuzzlib/=dependencies/fuzzlib/

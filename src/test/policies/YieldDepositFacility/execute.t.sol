@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Unlicensed
-pragma solidity >=0.8.20;
+pragma solidity ^0.8.15;
 
 import {YieldDepositFacilityTest} from "./YieldDepositFacilityTest.sol";
 

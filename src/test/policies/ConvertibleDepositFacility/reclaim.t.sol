@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Unlicensed
-pragma solidity >=0.8.20;
+pragma solidity ^0.8.15;
 
 import {ConvertibleDepositFacilityTest} from "./ConvertibleDepositFacilityTest.sol";
 import {IDepositFacility} from "src/policies/interfaces/deposits/IDepositFacility.sol";

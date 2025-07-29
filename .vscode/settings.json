@@ -1,6 +1,6 @@
 {
     "[solidity]": {
-        "editor.defaultFormatter": "NomicFoundation.hardhat-solidity"
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "solidity-metrics.file.exclusions.glob": "{**/node_modules,**/mock*,**/test*,**/migrations,**/Migrations.sol,lib,**/external,**/libraries,**/interfaces}",
     "solidity.compileUsingRemoteVersion": "v0.8.24+commit.e11b9ed9",
