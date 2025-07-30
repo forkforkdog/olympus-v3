@@ -2,12 +2,14 @@
 pragma solidity ^0.8.0;
 
 import "./utils/FunctionCalls.sol";
+import {IConvertibleDepositAuctioneer} from "src/policies/interfaces/deposits/IConvertibleDepositAuctioneer.sol";
 
 contract FuzzSetup is FunctionCalls {
     function fuzzSetup() internal {
         setUpBase();
 
         deploySampleContract();
+        setUpUsers();
         labelAll();
     }
 
@@ -197,14 +199,26 @@ contract FuzzSetup is FunctionCalls {
         );
         vm.stopPrank();
 
-        // Disable the convertibleDepositFacility
-        vm.prank(emergency);
-        convertibleDepositFacility.disable("");
-
         // Enable the yield deposit convertibleDepositFacility
         vm.prank(admin);
         yieldDepositFacility.enable("");
 
+        vm.prank(admin);
+        auctioneer.enableDepositPeriod(PERIOD_MONTHS);
+
+        //TODO: use randomization handler
+        vm.prank(admin);
+        auctioneer.enable(
+            abi.encode(
+                IConvertibleDepositAuctioneer.EnableParams({
+                    target: TARGET,
+                    tickSize: TICK_SIZE,
+                    minPrice: MIN_PRICE,
+                    tickStep: TICK_STEP,
+                    auctionTrackingPeriod: AUCTION_TRACKING_PERIOD
+                })
+            )
+        );
         //    // Configure mocks
         //     PRICE.setMovingAverage(100 * 1e18);
         //     PRICE.setLastPrice(100 * 1e18);
@@ -214,9 +228,41 @@ contract FuzzSetup is FunctionCalls {
 
     function setUpUsers() internal {
         for (uint256 i = 0; i < USERS.length; i++) {
-            vm.prank(USERS[i]);
+            vm.startPrank(USERS[i]);
             reserveToken.approve(address(depositManager), type(uint256).max);
             reserveTokenTwo.approve(address(depositManager), type(uint256).max);
+            reserveToken.approve(address(convertibleDepositFacility), type(uint256).max);
+            reserveTokenTwo.approve(address(convertibleDepositFacility), type(uint256).max);
+            reserveToken.approve(address(auctioneer), type(uint256).max);
+            reserveTokenTwo.approve(address(auctioneer), type(uint256).max);
+            reserveToken.approve(address(reserveWrapper), type(uint256).max);
+            reserveTokenTwo.approve(address(reserveWrapper), type(uint256).max);
+            reserveToken.approve(address(vault), type(uint256).max);
+            reserveTokenTwo.approve(address(vault), type(uint256).max);
+            reserveToken.approve(address(vaultTwo), type(uint256).max);
+            reserveTokenTwo.approve(address(vaultTwo), type(uint256).max);
+
+            uint256 receiptTokenId = depositManager.getReceiptTokenId(
+                IERC20(address(reserveToken)),
+                PERIOD_MONTHS
+            );
+            depositManager.approve(address(depositManager), receiptTokenId, type(uint256).max);
+
+            // address wrappedToken = depositManager.getWrappedToken(receiptTokenId);
+            // IERC20(wrappedToken).approve(address(depositManager), type(uint256).max);
+
+            receiptTokenId = depositManager.getReceiptTokenId(
+                IERC20(address(reserveTokenTwo)),
+                PERIOD_MONTHS
+            );
+            depositManager.approve(address(depositManager), receiptTokenId, type(uint256).max);
+
+            // wrappedToken = depositManager.getWrappedToken(receiptTokenId);
+            // IERC20(wrappedToken).approve(address(depositManager), type(uint256).max);
+
+            vm.stopPrank();
+            reserveToken.mint(USERS[i], 1000_000_000_000e18);
+            reserveTokenTwo.mint(USERS[i], 1000_000_000_000e18);
         }
     }
 
@@ -226,6 +272,47 @@ contract FuzzSetup is FunctionCalls {
 
     //DO LABELING
     function labelAll() internal {
+        //KERNEL
+        vm.label(address(kernel), "KERNEL");
+
+        //TREASURY
+        vm.label(address(treasury), "TREASURY");
+
+        //MINTER
+        vm.label(address(minter), "MINTER");
+
+        //ROLES
+        vm.label(address(roles), "ROLES");
+
+        //POSITION TOKEN RENDERER
+        vm.label(address(positionTokenRenderer), "POSITION TOKEN RENDERER");
+
+        //DEPOSIT MANAGER
+        vm.label(address(depositManager), "DEPOSIT MANAGER");
+
+        //CONVERTIBLE DEPOSIT FACILITY
+        vm.label(address(convertibleDepositFacility), "CONVERTIBLE DEPOSIT FACILITY");
+
+        //YIELD DEPOSIT FACILITY
+        vm.label(address(yieldDepositFacility), "YIELD DEPOSIT FACILITY");
+
+        //CONVERTIBLE DEPOSIT AUCTIONEER
+        vm.label(address(auctioneer), "CONVERTIBLE DEPOSIT AUCTIONEER");
+
+        //RESERVE WRAPPER
+        vm.label(address(reserveWrapper), "RESERVE WRAPPER");
+
+        //VAULT
+        vm.label(address(vault), "VAULT");
+        vm.label(address(vaultTwo), "VAULT TWO");
+
+        //ROLES ADMIN
+        vm.label(address(rolesAdmin), "ROLES ADMIN");
+
+        //SAMPLE CONTRACT
+        vm.label(address(sampleContract), "SAMPLE CONTRACT");
+
+        //GOHM
         //CONTRACTS
         vm.label(address(reserveToken), "RES");
         vm.label(address(vault), "sRES");

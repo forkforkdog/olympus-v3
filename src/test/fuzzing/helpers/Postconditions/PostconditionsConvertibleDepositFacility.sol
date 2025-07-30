@@ -96,4 +96,19 @@ contract PostconditionsConvertibleDepositFacility is PostconditionsBase {
             onFailInvariantsGeneral(returnData);
         }
     }
+
+    function reclaimPostconditions(
+        bool success,
+        bytes memory returnData,
+        CDF_ReclaimParams memory params
+    ) internal {
+        _after();
+
+        if (success) {
+            uint256 reclaimed = abi.decode(returnData, (uint256));
+            onSuccessInvariantsGeneral(returnData);
+        } else {
+            onFailInvariantsGeneral(returnData);
+        }
+    }
 }

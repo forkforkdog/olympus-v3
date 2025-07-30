@@ -119,6 +119,12 @@ contract FuzzStorageVariables is FuzzActors {
     uint8 public constant PERIOD_MONTHS = 6;
     uint48 public constant CONVERSION_EXPIRY = INITIAL_BLOCK + (30 days) * PERIOD_MONTHS;
 
+    uint256 public constant TICK_SIZE = 10e9;
+    uint24 public constant TICK_STEP = 110e2; // 110%
+    uint256 public constant MIN_PRICE = 15e18;
+    uint256 public constant TARGET = 20e9;
+    uint8 public constant AUCTION_TRACKING_PERIOD = 7;
+
     uint256 previousDepositActual;
     uint256 previousBorrowActual;
     SampleContract internal sampleContract;

@@ -61,6 +61,12 @@ contract BeforeAfter is FuzzSetup {
         IERC20 asset;
     }
 
+    struct CDF_ReclaimParams {
+        IERC20 asset;
+        uint8 periodMonths;
+        uint256 amount;
+    }
+
     // ========== YieldDepositFacility structs ==========
     struct YDF_CreatePositionParams {
         IERC20 asset;
@@ -154,7 +160,6 @@ contract BeforeAfter is FuzzSetup {
     }
 
     function _updateCommonState(uint8 callNum) private {
-        checkContractEthBalance(callNum);
         _logicalCoverage(callNum);
     }
 
@@ -162,19 +167,7 @@ contract BeforeAfter is FuzzSetup {
         // Implement logical coverage here.
     }
 
-    function _setActorState(uint8 callNum, address actor) internal virtual {
-        checkUserEthBalance(callNum, actor);
-    }
-
-    function checkUserEthBalance(uint8 callNum, address user) internal {
-        console.log("Before/After userEthBalance", callNum, user.balance);
-        states[callNum].actorStates[user].userEthBalance = user.balance;
-    }
-
-    function checkContractEthBalance(uint8 callNum) internal {
-        console.log("Before/After contractEthBalance", callNum, address(sampleContract).balance);
-        states[callNum].contractEthBalance = address(sampleContract).balance;
-    }
+    function _setActorState(uint8 callNum, address actor) internal virtual {}
 
     function min(uint256 a, uint256 b) internal pure returns (uint256) {
         return a < b ? a : b;

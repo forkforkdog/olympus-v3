@@ -5,6 +5,7 @@ import "./helpers/Preconditions/PreconditionsConvertibleDepositFacility.sol";
 import "./helpers/Postconditions/PostconditionsConvertibleDepositFacility.sol";
 import {IERC20} from "src/interfaces/IERC20.sol";
 import {IConvertibleDepositFacility} from "src/policies/interfaces/deposits/IConvertibleDepositFacility.sol";
+import {BaseDepositFacility} from "src/policies/deposits/BaseDepositFacility.sol";
 
 contract FuzzConvertibleDepositFacility is
     PreconditionsConvertibleDepositFacility,
@@ -130,6 +131,41 @@ contract FuzzConvertibleDepositFacility is
         );
 
         claimAllYieldPostconditions(success, returnData);
+    }
+
+    //   function reclaim(
+    //         IERC20 depositToken_,
+    //         uint8 depositPeriod_,
+    //         uint256 amount_
+    //     ) external returns (uint256 reclaimed) {
+    //         reclaimed = reclaimFor(depositToken_, depositPeriod_, msg.sender, amount_);
+    //     }
+
+    function fuzz_CDF_reclaim(
+        uint256 assetSeed,
+        uint8 periodMonthsSeed,
+        uint256 amountSeed
+    ) public setCurrentActor {
+        CDF_ReclaimParams memory params = reclaimCDFPreconditions(
+            assetSeed,
+            periodMonthsSeed,
+            amountSeed
+        );
+
+        _before();
+
+        (bool success, bytes memory returnData) = fl.doFunctionCall(
+            address(convertibleDepositFacility),
+            abi.encodeWithSelector(
+                BaseDepositFacility.reclaim.selector,
+                params.asset,
+                params.periodMonths,
+                params.amount
+            ),
+            currentActor
+        );
+
+        reclaimPostconditions(success, returnData, params);
     }
 
     function fuzz_CDF_execute() public setCurrentActor {

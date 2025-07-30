@@ -99,17 +99,13 @@ contract PreconditionsConvertibleDepositFacility is PreconditionsBase {
         uint256 amountSeed,
         bool wrappedReceipt
     ) internal returns (CDF_ConvertParams memory params) {
-        // For simplicity, we'll use dummy position IDs
-        // In a real scenario, we'd track created positions
         uint256 numPositions = 1; // Single position for now
 
         params.positionIds = new uint256[](numPositions);
         params.amounts = new uint256[](numPositions);
 
-        // Generate position ID (in real impl, this would be tracked)
-        params.positionIds[0] = (positionIdSeed % 1000) + 1;
-        // Set amount (bounded to reasonable values)
-        params.amounts[0] = fl.clamp(amountSeed, 1, 1000e18);
+        params.positionIds[0] = fl.clamp(positionIdSeed, 0, type(uint256).max);
+        params.amounts[0] = fl.clamp(amountSeed, 0, type(uint256).max);
 
         params.wrappedReceipt = wrappedReceipt;
     }
@@ -122,5 +118,31 @@ contract PreconditionsConvertibleDepositFacility is PreconditionsBase {
         IERC20[] memory assets = depositManager.getConfiguredAssets();
         require(assets.length > 0, "No assets configured"); //TODO: remove require
         params.asset = assets[assetSeed % assets.length];
+    }
+
+    // Reclaim preconditions
+    function reclaimCDFPreconditions(
+        uint256 assetSeed,
+        uint8 periodMonthsSeed,
+        uint256 amountSeed
+    ) internal returns (CDF_ReclaimParams memory params) {
+        // Get configured assets from deposit manager
+        IERC20[] memory assets = depositManager.getConfiguredAssets();
+        require(assets.length > 0, "No assets configured"); //TODO: remove require
+        params.asset = assets[assetSeed % assets.length];
+
+        // Get valid periods for the asset
+        IDepositManager.AssetPeriod[] memory periods = depositManager.getAssetPeriods();
+        uint8[] memory validPeriods = new uint8[](periods.length);
+        uint256 validCount = 0;
+
+        for (uint256 i = 0; i < periods.length; i++) {
+            if (address(periods[i].asset) == address(params.asset) && periods[i].isEnabled) {
+                validPeriods[validCount] = periods[i].depositPeriod;
+                validCount++;
+            }
+        }
+
+        params.amount = fl.clamp(amountSeed, 0, type(uint256).max);
     }
 }
