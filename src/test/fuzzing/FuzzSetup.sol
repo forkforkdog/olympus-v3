@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "./utils/FunctionCalls.sol";
 import {IConvertibleDepositAuctioneer} from "src/policies/interfaces/deposits/IConvertibleDepositAuctioneer.sol";
+import {DepositRedemptionVault} from "src/policies/deposits/DepositRedemptionVault.sol";
 
 contract FuzzSetup is FunctionCalls {
     function fuzzSetup() internal {
@@ -34,11 +35,11 @@ contract FuzzSetup is FunctionCalls {
         treasury = new OlympusTreasury(kernel);
         minter = new OlympusMinter(kernel, address(ohm));
         roles = new OlympusRoles(kernel);
-        positionTokenRenderer = new PositionTokenRenderer();
+        // positionTokenRenderer = new PositionTokenRenderer();
 
         convertibleDepositPositions = new OlympusDepositPositionManager(
             address(kernel),
-            address(positionTokenRenderer)
+            address(0) //renderer not used
         );
         depositManager = new DepositManager(address(kernel));
         redemptionVault = new DepositRedemptionVault(address(kernel), address(depositManager));
@@ -60,64 +61,83 @@ contract FuzzSetup is FunctionCalls {
         gohm = new MockGohm("Gohm", "gOHM", 18);
 
         // Deploy PRICE mock (with 8 hour frequency)
-        // PRICE = new MockPrice(kernel, uint48(8 hours), 10 * 1e18);
+        address priceAddr = deployContract(
+            "MockPrice.sol:MockPrice",
+            abi.encode(kernel, uint48(8 hours), 10 * 1e18)
+        );
+        kernel.executeAction(Actions.InstallModule, address(priceAddr));
+        // PRICE = MockPrice(priceAddr);
 
-        // // Deploy clearinghouse registry with mock clearinghouse
-        // MockClearinghouse clearinghouse = new MockClearinghouse(
-        //     address(reserveToken),
-        //     address(vault)
-        // );
-        // CHREG = new OlympusClearinghouseRegistry(kernel, address(clearinghouse), new address[](0));
+        // Deploy clearinghouse registry with mock clearinghouse
+        address clearinghouseAddr = deployContract(
+            "MockClearinghouse.sol:MockClearinghouse",
+            abi.encode(address(reserveToken), address(vault)) //TODO: clearing for second asset?
+        );
 
-        // // Deploy distributor (using ZeroDistributor)
-        // MockStakingZD staking = new MockStakingZD(8 hours, 0, block.timestamp);
-        // distributor = new ZeroDistributor(address(staking));
-        // staking.setDistributor(address(distributor));
+        // MockClearinghouse clearinghouse = MockClearinghouse(clearinghouseAddr);
+        address chregAddr = deployContract(
+            "OlympusClearinghouseRegistry.sol:OlympusClearinghouseRegistry",
+            abi.encode(kernel, address(clearinghouseAddr), new address[](0))
+        );
+        kernel.executeAction(Actions.InstallModule, address(chregAddr));
 
-        // // Deploy Heart
-        // heart = new OlympusHeart(
-        //     kernel,
-        //     IDistributor(address(distributor)),
-        //     uint256(10e9), // max reward = 10 reward tokens
-        //     uint48(12 * 50) // auction duration = 5 minutes (50 blocks on ETH mainnet)
-        // );
+        // CHREG = OlympusClearinghouseRegistry(chregAddr);
+
+        // Deploy distributor (using ZeroDistributor)
+        address stakingAddr = deployContract(
+            "src/test/mocks/MockStakingForZD.sol:MockStakingZD",
+            abi.encode(8 hours, 0, block.timestamp)
+        );
+        // MockStakingZD staking = MockStakingZD(stakingAddr);
+        address distributorAddr = deployContract(
+            "ZeroDistributor.sol:ZeroDistributor",
+            abi.encode(address(stakingAddr))
+        );
+        // distributor = ZeroDistributor(distributorAddr);
+        IStaking(stakingAddr).setDistributor(address(distributorAddr)); //TODO: uncomment this
 
         // // Deploy ReserveWrapper
         reserveWrapper = new ReserveWrapper(address(kernel), address(reserveToken), address(vault));
 
         // Deploy Bond system components for EmissionManager
-        // address guardian = address(this);
-        // RolesAuthority auth = new RolesAuthority(guardian, SolmateAuthority(address(0)));
-        // BondAggregator aggregator = new BondAggregator(guardian, auth);
-        // BondFixedTermTeller teller = new BondFixedTermTeller(guardian, aggregator, guardian, auth);
-        // BondFixedTermSDA bondAuctioneer = new BondFixedTermSDA(teller, aggregator, guardian, auth);
+        address guardian = address(this);
+        RolesAuthority auth = new RolesAuthority(guardian, SolmateAuthority(address(0)));
+        address aggregatorAddr = deployContract(
+            "BondAggregator.sol:BondAggregator",
+            abi.encode(guardian, auth)
+        );
+        IBondAggregator aggregator = IBondAggregator(aggregatorAddr);
 
-        // // Register bondAuctioneer
-        // aggregator.registerAuctioneer(bondAuctioneer);
+        address tellerAddr = deployContract(
+            "BondFixedTermTeller.sol:BondFixedTermTeller",
+            abi.encode(guardian, aggregator, guardian, auth)
+        );
+        IBondTeller teller = IBondTeller(tellerAddr);
 
-        // // Deploy mock CD auctioneer
-        // MockConvertibleDepositAuctioneer cdAuctioneer = new MockConvertibleDepositAuctioneer(
-        //     kernel,
-        //     address(reserveToken)
-        // );
+        address bondAuctioneerAddr = deployContract(
+            "BondFixedTermSDA.sol:BondFixedTermSDA",
+            abi.encode(teller, aggregator, guardian, auth)
+        );
+        IBondSDA bondAuctioneer = IBondSDA(bondAuctioneerAddr);
 
-        // // Deploy EmissionManager
-        // emissionManager = new EmissionManager(
-        //     kernel,
-        //     address(ohm),
-        //     address(gohm),
-        //     address(reserveToken),
-        //     address(vault),
-        //     address(bondAuctioneer),
-        //     address(cdAuctioneer),
-        //     address(teller)
-        // );
+        aggregator.registerAuctioneer(bondAuctioneer);
 
-        // // Update convertibleDepositPositions to use the renderer
-        // convertibleDepositPositions = new OlympusDepositPositionManager(
-        //     address(kernel),
-        //     address(positionTokenRenderer)
-        // );
+        bytes memory constructorArgsEmissionManager = abi.encode(
+            kernel,
+            address(ohm),
+            address(gohm),
+            address(reserveToken),
+            address(vault),
+            address(bondAuctioneer),
+            address(auctioneer),
+            address(teller)
+        );
+
+        address emissionManagerDeployment = deployCode(
+            "EmissionManager.sol:EmissionManager",
+            constructorArgsEmissionManager
+        );
+        emissionManager = IEmissionManager(emissionManagerDeployment);
 
         // Install modules
         kernel.executeAction(Actions.InstallModule, address(treasury));
@@ -134,21 +154,24 @@ contract FuzzSetup is FunctionCalls {
         kernel.executeAction(Actions.ActivatePolicy, address(auctioneer));
         // kernel.executeAction(Actions.ActivatePolicy, address(heart));
         kernel.executeAction(Actions.ActivatePolicy, address(reserveWrapper));
-        // kernel.executeAction(Actions.ActivatePolicy, address(emissionManager));
-        // kernel.executeAction(Actions.ActivatePolicy, address(cdAuctioneer));
+        kernel.executeAction(Actions.ActivatePolicy, address(emissionManager));
+        kernel.executeAction(Actions.ActivatePolicy, address(redemptionVault));
 
         // // Grant roles
         rolesAdmin.grantRole(bytes32("cd_auctioneer"), address(auctioneer));
         rolesAdmin.grantRole(bytes32("emergency"), emergency);
         rolesAdmin.grantRole(bytes32("admin"), admin);
         rolesAdmin.grantRole(bytes32("deposit_operator"), address(convertibleDepositFacility));
+        rolesAdmin.grantRole(bytes32("deposit_operator"), address(yieldDepositFacility));
+        rolesAdmin.grantRole(bytes32("deposit_operator"), address(redemptionVault));
+
         // rolesAdmin.grantRole(bytes32("deposit_operator"), address(yieldDepositFacility));
-        // rolesAdmin.grantRole(bytes32("heart"), HEART);
+        rolesAdmin.grantRole(bytes32("heart"), HEART);
 
         // Grant roles for new contracts
         rolesAdmin.grantRole(bytes32("heart_admin"), admin);
         rolesAdmin.grantRole(bytes32("manager"), admin);
-        // rolesAdmin.grantRole(bytes32("cd_emissionmanager"), address(heart));
+        rolesAdmin.grantRole(bytes32("cd_emissionmanager"), HEART);
         rolesAdmin.grantRole(bytes32("emissions_admin"), admin);
 
         // Enable the deposit manager
@@ -159,7 +182,7 @@ contract FuzzSetup is FunctionCalls {
         vm.prank(admin);
         convertibleDepositFacility.enable("");
 
-        // // Enable heart
+        // USING DIRECT CALL
         // vm.prank(admin);
         // heart.enable("");
 
@@ -202,6 +225,30 @@ contract FuzzSetup is FunctionCalls {
         // Enable the yield deposit convertibleDepositFacility
         vm.prank(admin);
         yieldDepositFacility.enable("");
+
+        // Enable the redemption vault
+        vm.prank(admin);
+        redemptionVault.enable("");
+
+        // Configure redemption vault borrowing parameters
+        vm.startPrank(admin);
+        redemptionVault.setMaxBorrowPercentage(IERC20(address(reserveToken)), 80e2); // 80%
+        redemptionVault.setAnnualInterestRate(IERC20(address(reserveToken)), 5e2); // 5%
+        redemptionVault.setMaxBorrowPercentage(IERC20(address(reserveTokenTwo)), 80e2); // 80%
+        redemptionVault.setAnnualInterestRate(IERC20(address(reserveTokenTwo)), 5e2); // 5%
+        redemptionVault.setClaimDefaultRewardPercentage(5e2); // 5% keeper reward
+        vm.stopPrank();
+
+        // Authorize facilities for redemption vault
+        vm.prank(admin);
+        redemptionVault.authorizeFacility(address(convertibleDepositFacility));
+        vm.prank(admin);
+        redemptionVault.authorizeFacility(address(yieldDepositFacility));
+
+        vm.prank(admin);
+        convertibleDepositFacility.authorizeOperator(address(redemptionVault));
+        vm.prank(admin);
+        yieldDepositFacility.authorizeOperator(address(redemptionVault));
 
         vm.prank(admin);
         auctioneer.enableDepositPeriod(PERIOD_MONTHS);
@@ -247,6 +294,7 @@ contract FuzzSetup is FunctionCalls {
                 PERIOD_MONTHS
             );
             depositManager.approve(address(depositManager), receiptTokenId, type(uint256).max);
+            depositManager.approve(address(redemptionVault), receiptTokenId, type(uint256).max);
 
             // address wrappedToken = depositManager.getWrappedToken(receiptTokenId);
             // IERC20(wrappedToken).approve(address(depositManager), type(uint256).max);
@@ -256,6 +304,7 @@ contract FuzzSetup is FunctionCalls {
                 PERIOD_MONTHS
             );
             depositManager.approve(address(depositManager), receiptTokenId, type(uint256).max);
+            depositManager.approve(address(redemptionVault), receiptTokenId, type(uint256).max);
 
             // wrappedToken = depositManager.getWrappedToken(receiptTokenId);
             // IERC20(wrappedToken).approve(address(depositManager), type(uint256).max);
@@ -285,7 +334,7 @@ contract FuzzSetup is FunctionCalls {
         vm.label(address(roles), "ROLES");
 
         //POSITION TOKEN RENDERER
-        vm.label(address(positionTokenRenderer), "POSITION TOKEN RENDERER");
+        // vm.label(address(positionTokenRenderer), "POSITION TOKEN RENDERER");
 
         //DEPOSIT MANAGER
         vm.label(address(depositManager), "DEPOSIT MANAGER");
@@ -322,5 +371,18 @@ contract FuzzSetup is FunctionCalls {
         vm.label(USER1, "USER1");
         vm.label(USER2, "USER2");
         vm.label(USER3, "USER3");
+    }
+
+    function deployContract(
+        string memory what,
+        bytes memory args
+    ) internal virtual returns (address addr) {
+        bytes memory bytecode = abi.encodePacked(vm.getCode(what), args);
+        /// @solidity memory-safe-assembly
+        assembly {
+            addr := create(0, add(bytecode, 0x20), mload(bytecode))
+        }
+
+        require(addr != address(0), "StdCheats deployCode(string,bytes): Deployment failed.");
     }
 }

@@ -31,7 +31,7 @@
         "shrinkLimit": 5000,
         "targetContracts": ["Fuzz"],
         "targetContractsBalances": ["0xfffffffffffffffffffffffffffffff"],
-        "testLimit": 100000000,
+        "testLimit": 1000000000000000000,
         "testing": {
             "assertionTesting": {
                 "enabled": true,

@@ -28,27 +28,28 @@ import {IDepositManager} from "src/policies/interfaces/deposits/IDepositManager.
 import {IDepositRedemptionVault} from "src/policies/interfaces/deposits/IDepositRedemptionVault.sol";
 import {IConvertibleDepositFacility} from "src/policies/interfaces/deposits/IConvertibleDepositFacility.sol";
 import {IYieldDepositFacility} from "src/policies/interfaces/deposits/IYieldDepositFacility.sol";
-import {ERC6909} from "@openzeppelin-5.3.0/token/ERC6909/draft-ERC6909.sol";
 import {IDepositFacility} from "src/policies/interfaces/deposits/IDepositFacility.sol";
 import {IPolicyAdmin} from "src/policies/interfaces/utils/IPolicyAdmin.sol";
 import {ConvertibleDepositAuctioneer} from "src/policies/deposits/ConvertibleDepositAuctioneer.sol";
 import {DepositRedemptionVault} from "src/policies/deposits/DepositRedemptionVault.sol";
 
-// import {OlympusHeart} from "src/policies/Heart.sol";
 import {ReserveWrapper} from "src/policies/ReserveWrapper.sol";
-// import {EmissionManager} from "src/policies/EmissionManager.sol";
-import {PositionTokenRenderer} from "src/modules/DEPOS/PositionTokenRenderer.sol";
+import {IEmissionManager} from "src/policies/interfaces/IEmissionManager.sol";
+import {RolesAuthority, Authority as SolmateAuthority} from "solmate/auth/authorities/RolesAuthority.sol";
+
 // import {IDistributor} from "src/policies/interfaces/IDistributor.sol";
 // import {IStaking} from "src/interfaces/IStaking.sol";
+
 // import {OlympusClearinghouseRegistry} from "src/modules/CHREG/OlympusClearinghouseRegistry.sol";
-// import {MockPrice} from "src/test/mocks/MockPrice.sol";
 // import {MockClearinghouse} from "src/test/mocks/MockClearinghouse.sol";
 // import {MockConvertibleDepositAuctioneer} from "src/test/mocks/MockConvertibleDepositAuctioneer.sol";
+// import {MockPrice} from "src/test/mocks/MockPrice.sol";
 import {MockGohm} from "src/test/mocks/MockGohm.sol";
 
 // import {ZeroDistributor} from "src/policies/Distributor/ZeroDistributor.sol";
-// import {MockStakingZD} from "src/test/mocks/MockStakingForZD.sol";
+import {IStaking} from "src/interfaces/IStaking.sol";
 
+// import {MockStakingZD} from "src/test/mocks/MockStakingForZD.sol";
 // // Bond system imports
 // import {BondFixedTermSDA} from "src/test/lib/bonds/BondFixedTermSDA.sol";
 // import {BondAggregator} from "src/test/lib/bonds/BondAggregator.sol";
@@ -98,8 +99,8 @@ contract FuzzStorageVariables is FuzzActors {
 
     // OlympusHeart public heart;
     ReserveWrapper public reserveWrapper;
-    // EmissionManager public emissionManager;
-    PositionTokenRenderer public positionTokenRenderer;
+    IEmissionManager public emissionManager;
+    // PositionTokenRenderer public positionTokenRenderer;
     // MockPrice public PRICE;
     // // OlympusClearinghouseRegistry public CHREG;
     // IDistributor public distributor;

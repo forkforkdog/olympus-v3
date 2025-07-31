@@ -92,6 +92,42 @@ contract BeforeAfter is FuzzSetup {
         uint16 yieldFee;
     }
 
+    // Struct definitions for parameters
+    struct DRV_StartRedemptionParams {
+        IERC20 depositToken;
+        uint8 depositPeriod;
+        uint256 amount;
+        address facility;
+    }
+
+    struct DRV_CancelRedemptionParams {
+        uint16 redemptionId;
+        uint256 amount;
+    }
+
+    struct DRV_FinishRedemptionParams {
+        uint16 redemptionId;
+    }
+
+    struct DRV_BorrowAgainstRedemptionParams {
+        uint16 redemptionId;
+    }
+
+    struct DRV_RepayLoanParams {
+        uint16 redemptionId;
+        uint256 amount;
+    }
+
+    struct DRV_ExtendLoanParams {
+        uint16 redemptionId;
+        uint8 months;
+    }
+
+    struct DRV_ClaimDefaultedLoanParams {
+        address user;
+        uint16 redemptionId;
+    }
+
     /// Sample contract structs
 
     struct SampleFunctionParams {

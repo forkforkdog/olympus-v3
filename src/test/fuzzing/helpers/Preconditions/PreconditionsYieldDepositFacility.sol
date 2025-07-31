@@ -116,12 +116,8 @@ abstract contract PreconditionsYieldDepositFacility is PreconditionsBase {
         uint256 numPositions,
         bool useTimestampHints
     ) internal returns (YDF_ClaimYieldParams memory params) {
-        params.positionIds = new uint256[](fl.clamp(numPositions, 1, 10));
-
-        for (uint256 i = 0; i < params.positionIds.length; i++) {
-            params.positionIds[i] = ((positionIdSeed + i) % 1000) + 1; // Dummy IDs
-        }
-
+        params.positionIds = new uint256[](1);
+        params.positionIds[0] = positionIdSeed;
         if (useTimestampHints) {
             params.timestampHints = new uint48[](params.positionIds.length);
             for (uint256 i = 0; i < params.timestampHints.length; i++) {

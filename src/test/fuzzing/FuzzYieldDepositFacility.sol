@@ -10,7 +10,7 @@ contract FuzzYieldDepositFacility is
     PreconditionsYieldDepositFacility,
     PostconditionsYieldDepositFacility
 {
-    function fuzz_createPosition(
+    function fuzz_YDF_createPosition(
         uint256 assetSeed,
         uint8 periodMonthsSeed,
         uint256 amountSeed,

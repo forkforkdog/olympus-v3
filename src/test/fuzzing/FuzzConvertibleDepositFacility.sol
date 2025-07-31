@@ -174,7 +174,7 @@ contract FuzzConvertibleDepositFacility is
         (bool success, bytes memory returnData) = fl.doFunctionCall(
             address(convertibleDepositFacility),
             abi.encodeWithSelector(ConvertibleDepositFacility.execute.selector),
-            currentActor
+            HEART
         );
 
         executePostconditions(success, returnData);
