@@ -138,6 +138,7 @@ contract FuzzStorageVariables is FuzzActors {
 
     mapping(address => Position[]) public positionsByUser;
     mapping(address => mapping(uint256 => uint256)) public userPositionIndex; // Maps user -> positionId -> array index
+    uint256[] public positionIds;
 
     // Helper functions for managing multiple positions per user
     function addPositionForUser(
@@ -154,6 +155,7 @@ contract FuzzStorageVariables is FuzzActors {
 
         uint256 index = positionsByUser[user].length;
         positionsByUser[user].push(newPosition);
+        positionIds.push(positionId);
         userPositionIndex[user][positionId] = index;
     }
 
@@ -170,6 +172,16 @@ contract FuzzStorageVariables is FuzzActors {
 
         positionsByUser[user].pop();
         delete userPositionIndex[user][positionId];
+    }
+
+    function removePosition(uint256 positionId) internal {
+        for (uint256 i = 0; i < positionIds.length; i++) {
+            if (positionIds[i] == positionId) {
+                positionIds[i] = positionIds[positionIds.length - 1];
+                positionIds.pop();
+                break;
+            }
+        }
     }
 
     function getUserPositions(address user) internal returns (Position[] memory) {

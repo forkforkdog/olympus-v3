@@ -638,4 +638,10 @@ contract DepositManager is
             BaseAssetManager.supportsInterface(interfaceId) ||
             PolicyEnabler.supportsInterface(interfaceId);
     }
+
+    // ========== Fuzzing ========== // NOTE: added by fuzzer
+
+    function getAssetLiabilities(address asset_, address operator_) public view returns (uint256) {
+        return _assetLiabilities[_getAssetLiabilitiesKey(IERC20(asset_), operator_)];
+    }
 }

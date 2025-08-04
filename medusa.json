@@ -16,7 +16,7 @@
         "chainConfig": {
             "cheatCodes": {
                 "cheatCodesEnabled": true,
-                "enableFFI": false
+                "enableFFI": true
             },
             "codeSizeCheckDisabled": true
         },
@@ -24,7 +24,8 @@
         "corpusDirectory": "medusa-corpus",
         "coverageEnabled": true,
         "coverageFormats": ["html", "lcov"],
-        "deployerAddress": "0x30000",
+        "deployerAddress": "0x7FA9385bE102ac3EAc297483Dd6233D62b3e1496",
+        "deploymentOrder": [],
         "predeployedContracts": {},
         "revertReporterEnabled": true,
         "senderAddresses": ["0x10000", "0x20000", "0x30000"],

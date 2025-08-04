@@ -15,3 +15,8 @@ coverage/
 /solidity-metrics.html
 dependencies/
 /medusa-corpus
+/echidna-corpus
+/echidna-corpusOLD
+echidna
+DeleteMock.sol
+src/test/fuzzing/Fuzz.f.sol

@@ -6,7 +6,7 @@ import "./FuzzGuided.sol";
 contract FoundryPlayground is FuzzGuided {
     function setUp() public {
         vm.warp(1524785992); //echidna starting time
-        fuzzSetup();
+        fuzzSetup(false);
     }
 
     function test_basic() public {
@@ -150,5 +150,23 @@ contract FoundryPlayground is FuzzGuided {
 
     function test_coverage_CDF_execute() public {
         fuzz_CDF_execute();
+    }
+
+    function test_repro_ERR_01_01() public {
+        fuzz_CDF_deposit(90071522809433658105489141, 0, 118737265262325488894027078496514, false);
+        fuzz_CDF_claimAllYield();
+        fuzz_CDF_claimYield(0);
+        fuzz_disableDepositPeriod(0);
+        fuzz_CDF_deposit(
+            145338425827532980977710848,
+            0,
+            15705207393113163161276411250528862668,
+            false
+        );
+        fuzz_bid(0, 15312952355, false, false);
+        fuzz_bid(0, 0, false, false);
+        fuzz_CDF_convert(0, 22481894031095905978127, false);
+        fuzz_YDF_createPosition(52914596029361425362330, 0, 88040122830455337578, false, false);
+        fuzz_CDF_convert(0, 1, true);
     }
 }

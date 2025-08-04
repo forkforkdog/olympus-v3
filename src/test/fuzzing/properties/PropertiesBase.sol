@@ -51,9 +51,12 @@ contract PropertiesBase is PropertiesDescriptions, BeforeAfter, FuzzConstants {
         }
     }
 
-    function greaterThanOrEqualWithToleranceWei(uint256 a, uint256 b, uint256 maxWeiDiff, string memory reason)
-        internal
-    {
+    function greaterThanOrEqualWithToleranceWei(
+        uint256 a,
+        uint256 b,
+        uint256 maxWeiDiff,
+        string memory reason
+    ) internal {
         if (a >= b) {
             fl.t(true, "Invariant ok, checked for: ");
             fl.log(reason);
@@ -75,7 +78,12 @@ contract PropertiesBase is PropertiesDescriptions, BeforeAfter, FuzzConstants {
         }
     }
 
-    function isApproxEqRel(uint256 a, uint256 b, uint256 maxDelta, string memory reason) internal returns (bool) {
+    function isApproxEqRel(
+        uint256 a,
+        uint256 b,
+        uint256 maxDelta,
+        string memory reason
+    ) internal returns (bool) {
         a < b ? b = a : a = b;
         uint256 delta = stdMath.percentDelta(a, b);
         fl.log("a: ", a);

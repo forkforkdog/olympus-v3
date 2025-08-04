@@ -5,24 +5,49 @@ contract FuzzConstants {
     // ERC20 v4.9 ERRORS
     // ==============================================================
     bytes internal constant EXCEEDS_BALANCE_ERROR =
-        abi.encodeWithSelector(bytes4(keccak256("Error(string)")), "ERC20: transfer amount exceeds balance");
+        abi.encodeWithSelector(
+            bytes4(keccak256("Error(string)")),
+            "ERC20: transfer amount exceeds balance"
+        );
     bytes internal constant INSUFFICIENT_ALLOWANCE =
         abi.encodeWithSelector(bytes4(keccak256("Error(string)")), "ERC20: insufficient allowance");
     bytes internal constant TRANSFER_FROM_ZERO =
-        abi.encodeWithSelector(bytes4(keccak256("Error(string)")), "ERC20: transfer from the zero address");
+        abi.encodeWithSelector(
+            bytes4(keccak256("Error(string)")),
+            "ERC20: transfer from the zero address"
+        );
     bytes internal constant TRANSFER_TO_ZERO =
-        abi.encodeWithSelector(bytes4(keccak256("Error(string)")), "ERC20: transfer to the zero address");
+        abi.encodeWithSelector(
+            bytes4(keccak256("Error(string)")),
+            "ERC20: transfer to the zero address"
+        );
     bytes internal constant APPROVE_TO_ZERO =
-        abi.encodeWithSelector(bytes4(keccak256("Error(string)")), "ERC20: approve to the zero address");
+        abi.encodeWithSelector(
+            bytes4(keccak256("Error(string)")),
+            "ERC20: approve to the zero address"
+        );
     bytes internal constant MINT_TO_ZERO =
-        abi.encodeWithSelector(bytes4(keccak256("Error(string)")), "ERC20: mint to the zero address");
+        abi.encodeWithSelector(
+            bytes4(keccak256("Error(string)")),
+            "ERC20: mint to the zero address"
+        );
     bytes internal constant BURN_FROM_ZERO =
-        abi.encodeWithSelector(bytes4(keccak256("Error(string)")), "ERC20: burn from the zero address");
+        abi.encodeWithSelector(
+            bytes4(keccak256("Error(string)")),
+            "ERC20: burn from the zero address"
+        );
     bytes internal constant DECREASED_ALLOWANCE =
-        abi.encodeWithSelector(bytes4(keccak256("Error(string)")), "ERC20: decreased allowance below zero");
+        abi.encodeWithSelector(
+            bytes4(keccak256("Error(string)")),
+            "ERC20: decreased allowance below zero"
+        );
     bytes internal constant BURN_EXCEEDS_BALANCE =
-        abi.encodeWithSelector(bytes4(keccak256("Error(string)")), "ERC20: burn amount exceeds balance");
-
+        abi.encodeWithSelector(
+            bytes4(keccak256("Error(string)")),
+            "ERC20: burn amount exceeds balance"
+        );
+    bytes internal constant TRANSFER_FROM_FAILED =
+        abi.encodeWithSelector(bytes4(keccak256("Error(string)")), "TRANSFER_FROM_FAILED");
     // ==============================================================
     // PANIC CODES
     // ==============================================================

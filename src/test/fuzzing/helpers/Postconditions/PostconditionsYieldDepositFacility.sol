@@ -48,6 +48,10 @@ contract PostconditionsYieldDepositFacility is PostconditionsBase {
             );
             addPositionForUser(currentActor, positionId, receiptTokenId, actualAmount);
 
+            // invariant_YDT_01(positionId);
+            // invariant_YDT_02(params, actualAmount);
+            // invariant_YDT_03(positionId);
+            // invariant_YDT_04(params);
             // Success invariants
             onSuccessInvariantsGeneral(returnData);
         } else {
@@ -70,7 +74,6 @@ contract PostconditionsYieldDepositFacility is PostconditionsBase {
                 returnData,
                 (uint256, uint256)
             );
-
             // Success invariants
             onSuccessInvariantsGeneral(returnData);
         } else {
@@ -91,6 +94,8 @@ contract PostconditionsYieldDepositFacility is PostconditionsBase {
             // Decode return value
             uint256 yieldMinusFee = abi.decode(returnData, (uint256));
 
+            // invariant_YDT_05(params, yieldMinusFee);
+            // invariant_YDT_06(params);
             // Success invariants
             onSuccessInvariantsGeneral(returnData);
         } else {

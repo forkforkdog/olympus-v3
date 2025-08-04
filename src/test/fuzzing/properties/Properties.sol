@@ -1,8 +1,8 @@
 pragma solidity >=0.8.0;
 
-import "./Properties_ERR.sol";
+import "./Properties_YDT.sol";
 
-contract Properties is Properties_ERR {
+contract Properties is Properties_YDT {
     // ==============================================================
     // Global Properties (GLOB)
     // ==============================================================

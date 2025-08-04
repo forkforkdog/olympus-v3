@@ -1,164 +1,15 @@
 pragma solidity >=0.8.0;
 
 import "../FuzzSetup.sol";
+import "./FuzzStructs.sol";
 
-contract BeforeAfter is FuzzSetup {
-    // ConvertibleDepositAuctioneer structs
-    struct BidParams {
-        uint8 depositPeriod;
-        uint256 depositAmount;
-        bool wrapPosition;
-        bool wrapReceipt;
-    }
-
-    struct EnableDepositPeriodParams {
-        uint8 depositPeriod;
-    }
-
-    struct DisableDepositPeriodParams {
-        uint8 depositPeriod;
-    }
-
-    struct SetAuctionParametersParams {
-        uint256 target;
-        uint256 tickSize;
-        uint256 minPrice;
-    }
-
-    struct SetTickStepParams {
-        uint24 newStep;
-    }
-
-    struct SetAuctionTrackingPeriodParams {
-        uint8 daysNumber;
-    }
-
-    // ========== ConvertibleDepositFacility structs ==========
-    struct CDF_CreatePositionParams {
-        IERC20 asset;
-        uint8 periodMonths;
-        address depositor;
-        uint256 amount;
-        uint256 conversionPrice;
-        bool wrapPosition;
-        bool wrapReceipt;
-    }
-
-    struct CDF_DepositParams {
-        IERC20 asset;
-        uint8 periodMonths;
-        uint256 amount;
-        bool wrapReceipt;
-    }
-
-    struct CDF_ConvertParams {
-        uint256[] positionIds;
-        uint256[] amounts;
-        bool wrappedReceipt;
-    }
-
-    struct CDF_ClaimYieldParams {
-        IERC20 asset;
-    }
-
-    struct CDF_ReclaimParams {
-        IERC20 asset;
-        uint8 periodMonths;
-        uint256 amount;
-    }
-
-    // ========== YieldDepositFacility structs ==========
-    struct YDF_CreatePositionParams {
-        IERC20 asset;
-        uint8 periodMonths;
-        uint256 amount;
-        bool wrapReceipt;
-        bool wrapPosition;
-    }
-
-    struct YDF_DepositParams {
-        IERC20 asset;
-        uint8 periodMonths;
-        uint256 amount;
-        bool wrapReceipt;
-    }
-
-    struct YDF_ClaimYieldParams {
-        uint256[] positionIds;
-        uint48[] timestampHints;
-    }
-
-    struct YDF_SetYieldFeeParams {
-        uint16 yieldFee;
-    }
-
-    // Struct definitions for parameters
-    struct DRV_StartRedemptionParams {
-        IERC20 depositToken;
-        uint8 depositPeriod;
-        uint256 amount;
-        address facility;
-    }
-
-    struct DRV_CancelRedemptionParams {
-        uint16 redemptionId;
-        uint256 amount;
-    }
-
-    struct DRV_FinishRedemptionParams {
-        uint16 redemptionId;
-    }
-
-    struct DRV_BorrowAgainstRedemptionParams {
-        uint16 redemptionId;
-    }
-
-    struct DRV_RepayLoanParams {
-        uint16 redemptionId;
-        uint256 amount;
-    }
-
-    struct DRV_ExtendLoanParams {
-        uint16 redemptionId;
-        uint8 months;
-    }
-
-    struct DRV_ClaimDefaultedLoanParams {
-        address user;
-        uint16 redemptionId;
-    }
-
-    /// Sample contract structs
-
-    struct SampleFunctionParams {
-        uint256 sampleUint;
-    }
-
-    struct SampleFailWithRequireParams {
-        bool sampleUint;
-    }
-
-    struct SampleFailWithCustomErrorParams {
-        uint8 sampleUint;
-    }
-
-    struct SampleFailWithPanicParams {
-        uint256 sampleUint;
-    }
-
-    struct SampleFailWithAssertParams {
-        uint256 sampleUint;
-    }
-
-    struct SampleFailReturnEmptyDataParams {
-        bool sampleUint;
-    }
-
+contract BeforeAfter is FuzzStructs, FuzzSetup {
     mapping(uint8 => State) states;
 
     struct State {
         mapping(address => ActorStates) actorStates;
         uint256 contractEthBalance;
+        mapping(uint256 => uint256) positionLastYieldConversionRate;
     }
 
     struct ActorStates {
@@ -196,6 +47,29 @@ contract BeforeAfter is FuzzSetup {
     }
 
     function _updateCommonState(uint8 callNum) private {
+        // for (uint256 i = 0; i < positionIds.length; i++) {
+        //     states[callNum].positionLastYieldConversionRate[positionIds[i]] = yieldDepositFacility
+        //         .positionLastYieldConversionRate(positionIds[i]);
+        //     states[callNum].isConvertible[positionIds[i]] = convertibleDepositPositions
+        //         .isConvertible(positionIds[i]);
+        // }
+
+        // states[callNum].depositManagerBalance = reserveToken.balanceOf(address(depositManager));
+        // states[callNum].depositManagerBalanceTwo = reserveTokenTwo.balanceOf(
+        //     address(depositManager)
+        // );
+        // states[callNum].vaultBalance = reserveToken.balanceOf(address(vault));
+        // states[callNum].vaultBalanceTwo = reserveTokenTwo.balanceOf(address(vaultTwo));
+
+        // states[callNum].totalYieldAccrued = depositManager.maxClaimYield(
+        //     reserveToken,
+        //     address(yieldDepositFacility)
+        // );
+        // states[callNum].totalYieldAccruedTwo = depositManager.maxClaimYield(
+        //     reserveTokenTwo,
+        //     address(yieldDepositFacility)
+        // );
+
         _logicalCoverage(callNum);
     }
 
@@ -203,7 +77,32 @@ contract BeforeAfter is FuzzSetup {
         // Implement logical coverage here.
     }
 
-    function _setActorState(uint8 callNum, address actor) internal virtual {}
+    function _setActorState(uint8 callNum, address actor) internal virtual {
+        // states[callNum].actorStates[actor].receiptTokenBalance = yieldDepositFacility.balanceOf(
+        //     actor,
+        //     receiptTokenId
+        // );
+        // states[callNum].actorStates[actor].receiptTokenBalanceTwo = yieldDepositFacility.balanceOf(
+        //     actor,
+        //     receiptTokenIdTwo
+        // );
+        // states[callNum].actorStates[actor].assetLiabilities = depositManager.getAssetLiabilities(
+        //     address(reserveToken),
+        //     actor
+        // );
+        // states[callNum].actorStates[actor].assetLiabilitiesTwo = depositManager.getAssetLiabilities(
+        //     address(reserveTokenTwo),
+        //     actor
+        // );
+        // states[callNum].actorStates[actor].totalPreviewClaimYield = 0;
+        // for (uint256 i = 0; i < getUserPositions(actor).length; i++) {
+        //     (uint256 previewYieldMinusFee, ) = yieldDepositFacility.previewClaimYield(
+        //         actor,
+        //         getUserPositions(actor)[i].positionId
+        //     );
+        //     states[callNum].actorStates[actor].totalPreviewClaimYield += previewYieldMinusFee;
+        // }
+    }
 
     function min(uint256 a, uint256 b) internal pure returns (uint256) {
         return a < b ? a : b;
