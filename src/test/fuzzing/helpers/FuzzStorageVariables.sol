@@ -125,6 +125,7 @@ contract FuzzStorageVariables is FuzzActors {
     uint256 public constant MIN_PRICE = 15e18;
     uint256 public constant TARGET = 20e9;
     uint8 public constant AUCTION_TRACKING_PERIOD = 7;
+    uint256 public constant ONE_HUNDRED_PERCENT = 100e2;
 
     uint256 previousDepositActual;
     uint256 previousBorrowActual;
@@ -186,6 +187,14 @@ contract FuzzStorageVariables is FuzzActors {
 
     function getUserPositions(address user) internal returns (Position[] memory) {
         return positionsByUser[user];
+    }
+
+    function getUserPositionIds(address user) internal returns (uint256[] memory) {
+        uint256[] memory userPositionIds = new uint256[](positionsByUser[user].length);
+        for (uint256 i = 0; i < positionsByUser[user].length; i++) {
+            userPositionIds[i] = positionsByUser[user][i].positionId;
+        }
+        return userPositionIds;
     }
 
     function getUserPositionCount(address user) internal returns (uint256) {

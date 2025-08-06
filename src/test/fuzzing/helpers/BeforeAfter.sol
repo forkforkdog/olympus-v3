@@ -8,12 +8,30 @@ contract BeforeAfter is FuzzStructs, FuzzSetup {
 
     struct State {
         mapping(address => ActorStates) actorStates;
-        uint256 contractEthBalance;
         mapping(uint256 => uint256) positionLastYieldConversionRate;
+        mapping(uint256 => bool) isConvertible;
+        uint256 contractEthBalance;
+        uint256 depositManagerBalance;
+        uint256 depositManagerBalanceTwo;
+        uint256 vaultBalance;
+        uint256 vaultBalanceTwo;
+        uint256 totalYieldAccrued;
+        uint256 totalYieldAccruedTwo;
+        uint256 trsryBalance;
+        uint256 trsryBalanceTwo;
+        uint256 YDT_assetLiabilitiesOne;
+        uint256 YDT_assetLiabilitiesTwo;
+        uint256 sumAllActorYieldPreviews;
+        uint256 sumAllActorYieldPreviewsTwo;
     }
 
     struct ActorStates {
-        uint256 userEthBalance;
+        uint256 assetLiabilities;
+        uint256 assetLiabilitiesTwo;
+        uint256 totalPreviewClaimYield;
+        uint256 totalPreviewClaimYieldTwo;
+        uint256 receiptTokenBalance;
+        uint256 receiptTokenBalanceTwo;
     }
 
     function _before(address[] memory actors) internal {
@@ -41,35 +59,48 @@ contract BeforeAfter is FuzzStructs, FuzzSetup {
     }
 
     function _processActors(uint8 callNum, address[] memory actors) private {
+        // Reset the sum before processing actors
+        states[callNum].sumAllActorYieldPreviews = 0;
+        states[callNum].sumAllActorYieldPreviewsTwo = 0;
+        
         for (uint256 i = 0; i < actors.length; i++) {
             _setActorState(callNum, actors[i]);
         }
     }
 
     function _updateCommonState(uint8 callNum) private {
-        // for (uint256 i = 0; i < positionIds.length; i++) {
-        //     states[callNum].positionLastYieldConversionRate[positionIds[i]] = yieldDepositFacility
-        //         .positionLastYieldConversionRate(positionIds[i]);
-        //     states[callNum].isConvertible[positionIds[i]] = convertibleDepositPositions
-        //         .isConvertible(positionIds[i]);
-        // }
+        for (uint256 i = 0; i < positionIds.length; i++) {
+            states[callNum].positionLastYieldConversionRate[positionIds[i]] = yieldDepositFacility
+                .positionLastYieldConversionRate(positionIds[i]);
+            states[callNum].isConvertible[positionIds[i]] = convertibleDepositPositions
+                .isConvertible(positionIds[i]);
+        }
 
-        // states[callNum].depositManagerBalance = reserveToken.balanceOf(address(depositManager));
-        // states[callNum].depositManagerBalanceTwo = reserveTokenTwo.balanceOf(
-        //     address(depositManager)
-        // );
-        // states[callNum].vaultBalance = reserveToken.balanceOf(address(vault));
-        // states[callNum].vaultBalanceTwo = reserveTokenTwo.balanceOf(address(vaultTwo));
+        states[callNum].depositManagerBalance = reserveToken.balanceOf(address(depositManager));
+        states[callNum].depositManagerBalanceTwo = reserveTokenTwo.balanceOf(
+            address(depositManager)
+        );
+        states[callNum].vaultBalance = reserveToken.balanceOf(address(vault));
+        states[callNum].vaultBalanceTwo = reserveTokenTwo.balanceOf(address(vaultTwo));
+        states[callNum].trsryBalance = reserveToken.balanceOf(address(treasury));
+        states[callNum].trsryBalanceTwo = reserveTokenTwo.balanceOf(address(treasury));
 
-        // states[callNum].totalYieldAccrued = depositManager.maxClaimYield(
-        //     reserveToken,
-        //     address(yieldDepositFacility)
-        // );
-        // states[callNum].totalYieldAccruedTwo = depositManager.maxClaimYield(
-        //     reserveTokenTwo,
-        //     address(yieldDepositFacility)
-        // );
-
+        states[callNum].totalYieldAccrued = depositManager.maxClaimYield(
+            IERC20(address(reserveToken)),
+            address(yieldDepositFacility)
+        );
+        states[callNum].totalYieldAccruedTwo = depositManager.maxClaimYield(
+            IERC20(address(reserveTokenTwo)),
+            address(yieldDepositFacility)
+        );
+        states[callNum].YDT_assetLiabilitiesOne = depositManager.getAssetLiabilities(
+            address(reserveToken),
+            address(yieldDepositFacility)
+        );
+        states[callNum].YDT_assetLiabilitiesTwo = depositManager.getAssetLiabilities(
+            address(reserveTokenTwo),
+            address(yieldDepositFacility)
+        );
         _logicalCoverage(callNum);
     }
 
@@ -78,30 +109,18 @@ contract BeforeAfter is FuzzStructs, FuzzSetup {
     }
 
     function _setActorState(uint8 callNum, address actor) internal virtual {
-        // states[callNum].actorStates[actor].receiptTokenBalance = yieldDepositFacility.balanceOf(
-        //     actor,
-        //     receiptTokenId
-        // );
-        // states[callNum].actorStates[actor].receiptTokenBalanceTwo = yieldDepositFacility.balanceOf(
-        //     actor,
-        //     receiptTokenIdTwo
-        // );
-        // states[callNum].actorStates[actor].assetLiabilities = depositManager.getAssetLiabilities(
-        //     address(reserveToken),
-        //     actor
-        // );
-        // states[callNum].actorStates[actor].assetLiabilitiesTwo = depositManager.getAssetLiabilities(
-        //     address(reserveTokenTwo),
-        //     actor
-        // );
-        // states[callNum].actorStates[actor].totalPreviewClaimYield = 0;
-        // for (uint256 i = 0; i < getUserPositions(actor).length; i++) {
-        //     (uint256 previewYieldMinusFee, ) = yieldDepositFacility.previewClaimYield(
-        //         actor,
-        //         getUserPositions(actor)[i].positionId
-        //     );
-        //     states[callNum].actorStates[actor].totalPreviewClaimYield += previewYieldMinusFee;
-        // }
+        // Only preview claim yield if the user has positions
+        uint256[] memory userPositionIds = getUserPositionIds(actor);
+        if (userPositionIds.length > 0) {
+            (uint256 previewYieldMinusFee, ) = yieldDepositFacility.previewClaimYield(
+                actor,
+                userPositionIds
+            );
+            // Don't accumulate, just set the current preview value
+            states[callNum].actorStates[actor].totalPreviewClaimYield = previewYieldMinusFee;
+            // Add to the sum for this state
+            states[callNum].sumAllActorYieldPreviews += previewYieldMinusFee;
+        }
     }
 
     function min(uint256 a, uint256 b) internal pure returns (uint256) {

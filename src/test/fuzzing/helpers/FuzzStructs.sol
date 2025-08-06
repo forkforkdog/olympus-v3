@@ -92,6 +92,13 @@ contract FuzzStructs {
         uint16 yieldFee;
     }
 
+    struct YDF_SimulateYieldParams {
+        address targetVault;
+        IERC20 targetAsset;
+        bool shouldMint;
+        uint256 amount;
+    }
+
     // Struct definitions for parameters
     struct DRV_StartRedemptionParams {
         IERC20 depositToken;

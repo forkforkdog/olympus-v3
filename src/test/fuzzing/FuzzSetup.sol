@@ -140,10 +140,6 @@ contract FuzzSetup is FunctionCalls {
                 "src/test/mocks/MockStakingForZD.sol:MockStakingZD",
                 abi.encode(8 hours, 0, block.timestamp)
             );
-            stakingAddr = deployContract(
-                "src/test/mocks/MockStakingForZD.sol:MockStakingZD",
-                abi.encode(8 hours, 0, block.timestamp)
-            );
         }
         // MockStakingZD staking = MockStakingZD(stakingAddr);
         address distributorAddr;
@@ -420,43 +416,43 @@ contract FuzzSetup is FunctionCalls {
 
     //DO LABELING
     function labelAll() internal {
-        // //KERNEL
-        // vm.label(address(kernel), "KERNEL");
-        // //TREASURY
-        // vm.label(address(treasury), "TREASURY");
-        // //MINTER
-        // vm.label(address(minter), "MINTER");
-        // //ROLES
-        // vm.label(address(roles), "ROLES");
-        // //POSITION TOKEN RENDERER
-        // // vm.label(address(positionTokenRenderer), "POSITION TOKEN RENDERER");
-        // //DEPOSIT MANAGER
-        // vm.label(address(depositManager), "DEPOSIT MANAGER");
-        // //CONVERTIBLE DEPOSIT FACILITY
-        // vm.label(address(convertibleDepositFacility), "CONVERTIBLE DEPOSIT FACILITY");
-        // //YIELD DEPOSIT FACILITY
-        // vm.label(address(yieldDepositFacility), "YIELD DEPOSIT FACILITY");
-        // //CONVERTIBLE DEPOSIT AUCTIONEER
-        // vm.label(address(auctioneer), "CONVERTIBLE DEPOSIT AUCTIONEER");
-        // //RESERVE WRAPPER
-        // vm.label(address(reserveWrapper), "RESERVE WRAPPER");
-        // //VAULT
-        // vm.label(address(vault), "VAULT");
-        // vm.label(address(vaultTwo), "VAULT TWO");
-        // //ROLES ADMIN
-        // vm.label(address(rolesAdmin), "ROLES ADMIN");
-        // //SAMPLE CONTRACT
-        // vm.label(address(sampleContract), "SAMPLE CONTRACT");
-        // //GOHM
-        // //CONTRACTS
-        // vm.label(address(reserveToken), "RES");
-        // vm.label(address(vault), "sRES");
-        // vm.label(address(reserveTokenTwo), "RES2");
-        // vm.label(address(vaultTwo), "sRES2");
-        // //USERS
-        // vm.label(USER1, "USER1");
-        // vm.label(USER2, "USER2");
-        // vm.label(USER3, "USER3");
+        //KERNEL
+        vm.label(address(kernel), "KERNEL");
+        //TREASURY
+        vm.label(address(treasury), "TREASURY");
+        //MINTER
+        vm.label(address(minter), "MINTER");
+        //ROLES
+        vm.label(address(roles), "ROLES");
+        //POSITION TOKEN RENDERER
+        // vm.label(address(positionTokenRenderer), "POSITION TOKEN RENDERER");
+        //DEPOSIT MANAGER
+        vm.label(address(depositManager), "DEPOSIT MANAGER");
+        //CONVERTIBLE DEPOSIT FACILITY
+        vm.label(address(convertibleDepositFacility), "CONVERTIBLE DEPOSIT FACILITY");
+        //YIELD DEPOSIT FACILITY
+        vm.label(address(yieldDepositFacility), "YIELD DEPOSIT FACILITY");
+        //CONVERTIBLE DEPOSIT AUCTIONEER
+        vm.label(address(auctioneer), "CONVERTIBLE DEPOSIT AUCTIONEER");
+        //RESERVE WRAPPER
+        vm.label(address(reserveWrapper), "RESERVE WRAPPER");
+        //VAULT
+        vm.label(address(vault), "VAULT");
+        vm.label(address(vaultTwo), "VAULT TWO");
+        //ROLES ADMIN
+        vm.label(address(rolesAdmin), "ROLES ADMIN");
+        //SAMPLE CONTRACT
+        vm.label(address(sampleContract), "SAMPLE CONTRACT");
+        //GOHM
+        //CONTRACTS
+        vm.label(address(reserveToken), "RES");
+        vm.label(address(vault), "sRES");
+        vm.label(address(reserveTokenTwo), "RES2");
+        vm.label(address(vaultTwo), "sRES2");
+        //USERS
+        vm.label(USER1, "USER1");
+        vm.label(USER2, "USER2");
+        vm.label(USER3, "USER3");
     }
 
     function deployContract(
@@ -481,16 +477,85 @@ contract FuzzSetup is FunctionCalls {
 
     //     require(addr != address(0), "StdCheats deployCode(string,bytes): Deployment failed.");
     // }
+    event DebugString(string str);
 
     function getCodeFFI(string memory contractPath) internal returns (bytes memory) {
+        // Split contractPath into file and contract name
+        bytes memory contractPathBytes = bytes(contractPath);
+        uint256 colonIndex;
+        for (uint256 i = 0; i < contractPathBytes.length; i++) {
+            if (contractPathBytes[i] == ":") {
+                colonIndex = i;
+                break;
+            }
+        }
+        require(
+            colonIndex > 0 && colonIndex < contractPathBytes.length - 1,
+            "Invalid contract path format"
+        );
+
+        string memory fullPath = string(substring(contractPathBytes, 0, colonIndex));
+        string memory contractName = string(
+            substring(contractPathBytes, colonIndex + 1, contractPathBytes.length)
+        );
+
+        // Extract just the filename from the full path
+        bytes memory fullPathBytes = bytes(fullPath);
+        uint256 lastSlashIndex = 0;
+        for (uint256 i = fullPathBytes.length; i > 0; i--) {
+            if (fullPathBytes[i - 1] == "/") {
+                lastSlashIndex = i;
+                break;
+            }
+        }
+
+        string memory fileName = lastSlashIndex > 0
+            ? string(substring(fullPathBytes, lastSlashIndex, fullPathBytes.length))
+            : fullPath;
+
         string[] memory inputs = new string[](3);
         inputs[0] = "sh";
         inputs[1] = "-c";
         inputs[2] = string(
-            abi.encodePacked("forge inspect ", contractPath, " bytecode | tr -d '\\n'")
+            abi.encodePacked(
+                "FILE_PATH=$(find . -name '",
+                fileName,
+                "' -type f 2>/dev/null | grep -E '\\.(sol)$' | head -n 1); ",
+                'if [ -z "$FILE_PATH" ]; then ',
+                "echo 'File not found: ",
+                fileName,
+                "' >&2; exit 1; ",
+                "fi; ",
+                'forge inspect "$FILE_PATH:',
+                contractName,
+                "\" bytecode 2>/dev/null | tr -d '\\n' || ",
+                "(echo 'Failed to get bytecode for ",
+                contractName,
+                "' >&2; exit 1)"
+            )
         );
 
-        return vm.ffi(inputs);
+        emit DebugString(fullPath);
+        emit DebugString(fileName);
+        emit DebugString(contractName);
+
+        bytes memory result = vm.ffi(inputs);
+        require(result.length > 0, "Failed to get contract bytecode");
+
+        return result;
+    }
+
+    // Helper function to extract substring (since Solidity doesn't have built-in string slicing)
+    function substring(
+        bytes memory str,
+        uint256 start,
+        uint256 end
+    ) internal pure returns (bytes memory) {
+        bytes memory result = new bytes(end - start);
+        for (uint256 i = 0; i < end - start; i++) {
+            result[i] = str[start + i];
+        }
+        return result;
     }
 
     function increaseNonce(uint256 loops) internal {

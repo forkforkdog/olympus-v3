@@ -32,6 +32,26 @@ contract FoundryPlayground is FuzzGuided {
     function test_coverage_YDF_createPosition() public {
         setActor(USERS[1]);
         fuzz_YDF_createPosition(0, 0, 10e18, false, false);
+
+        // Simulate yield generation by minting tokens to vault
+        // Seeds below 70 will mint (generate yield), above 70 will burn
+        fuzz_YDF_simulateYield(50, 0); // Will mint tokens (50 < 70)
+
+        vm.warp(block.timestamp + 4 hours + 1);
+
+        fuzz_YDF_execute();
+
+        // Add more yield before first claim
+        fuzz_YDF_simulateYield(30, 0); // Will mint tokens (30 < 70)
+
+        setActor(USERS[1]);
+        fuzz_YDF_claimYield(0, 1, false);
+
+        // Generate more yield between claims
+        fuzz_YDF_simulateYield(10, 0); // Will mint tokens (10 < 70)
+
+        fuzz_YDF_execute();
+
         setActor(USERS[1]);
         fuzz_YDF_claimYield(0, 1, false);
     }

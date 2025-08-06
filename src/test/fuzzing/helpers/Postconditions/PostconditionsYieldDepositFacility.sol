@@ -38,8 +38,6 @@ contract PostconditionsYieldDepositFacility is PostconditionsBase {
         bytes memory returnData,
         YDF_CreatePositionParams memory params
     ) internal {
-        _after();
-
         if (success) {
             // Decode return values
             (uint256 positionId, uint256 receiptTokenId, uint256 actualAmount) = abi.decode(
@@ -48,10 +46,12 @@ contract PostconditionsYieldDepositFacility is PostconditionsBase {
             );
             addPositionForUser(currentActor, positionId, receiptTokenId, actualAmount);
 
-            // invariant_YDT_01(positionId);
-            // invariant_YDT_02(params, actualAmount);
-            // invariant_YDT_03(positionId);
-            // invariant_YDT_04(params);
+            _after(); //Checking after after createPosition
+
+            invariant_YDT_01(positionId);
+            invariant_YDT_02(params, actualAmount);
+            invariant_YDT_03(positionId);
+            invariant_YDT_04(params);
             // Success invariants
             onSuccessInvariantsGeneral(returnData);
         } else {
@@ -66,14 +66,15 @@ contract PostconditionsYieldDepositFacility is PostconditionsBase {
         bytes memory returnData,
         YDF_DepositParams memory params
     ) internal {
-        _after();
-
         if (success) {
             // Decode return values
             (uint256 receiptTokenId, uint256 actualAmount) = abi.decode(
                 returnData,
                 (uint256, uint256)
             );
+
+            _after();
+
             // Success invariants
             onSuccessInvariantsGeneral(returnData);
         } else {
@@ -88,14 +89,13 @@ contract PostconditionsYieldDepositFacility is PostconditionsBase {
         bytes memory returnData,
         YDF_ClaimYieldParams memory params
     ) internal {
-        _after();
-
         if (success) {
             // Decode return value
             uint256 yieldMinusFee = abi.decode(returnData, (uint256));
+            _after();
 
-            // invariant_YDT_05(params, yieldMinusFee);
-            // invariant_YDT_06(params);
+            invariant_YDT_05(params, yieldMinusFee);
+            invariant_YDT_06(params);
             // Success invariants
             onSuccessInvariantsGeneral(returnData);
         } else {
@@ -109,6 +109,21 @@ contract PostconditionsYieldDepositFacility is PostconditionsBase {
         bool success,
         bytes memory returnData,
         YDF_SetYieldFeeParams memory params
+    ) internal {
+        _after();
+
+        if (success) {
+            onSuccessInvariantsGeneral(returnData);
+        } else {
+            onFailInvariantsGeneral(returnData);
+        }
+    }
+
+    // Postconditions for simulateYield
+    function simulateYieldPostconditions(
+        bool success,
+        bytes memory returnData,
+        YDF_SimulateYieldParams memory params
     ) internal {
         _after();
 

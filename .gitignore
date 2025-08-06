@@ -20,3 +20,5 @@ dependencies/
 echidna
 DeleteMock.sol
 src/test/fuzzing/Fuzz.f.sol
+.DS_Store
+src/.DS_Store

@@ -135,4 +135,42 @@ abstract contract PreconditionsYieldDepositFacility is PreconditionsBase {
         // Must be <= 100e2 (100%)
         params.yieldFee = uint16(fl.clamp(yieldFeeSeed, 0, 100e2));
     }
+
+    // Simulate yield preconditions
+    function simulateYieldPreconditions(
+        uint256 actionSeed,
+        uint256 assetSeed
+    ) internal view returns (YDF_SimulateYieldParams memory params) {
+        // Determine which vault to affect (0 = vault1, 1 = vault2)
+        bool useVaultOne = (assetSeed % 2) == 0;
+
+        // Determine action: 0-70% chance to mint (generate yield), 30% chance to burn (loss)
+        params.shouldMint = (actionSeed % 100) < 70;
+
+        // Set target vault and asset
+        if (useVaultOne) {
+            params.targetVault = address(vault);
+            params.targetAsset = IERC20(address(reserveToken));
+        } else {
+            params.targetVault = address(vaultTwo);
+            params.targetAsset = IERC20(address(reserveTokenTwo));
+        }
+
+        uint256 currentBalance = params.targetAsset.balanceOf(params.targetVault);
+
+        // Skip if vault has no balance
+        if (currentBalance == 0) {
+            params.amount = 0;
+            return params;
+        }
+
+        // Calculate amount based on seed (between 0.1% and 10% of current vault balance)
+        uint256 percentageBasisPoints = (actionSeed % 1000) + 10; // 10 to 1010 basis points (0.1% to 10.1%)
+        params.amount = (currentBalance * percentageBasisPoints) / 10000;
+
+        // If burning, ensure we don't burn more than vault balance
+        if (!params.shouldMint && params.amount > currentBalance) {
+            params.amount = currentBalance;
+        }
+    }
 }
